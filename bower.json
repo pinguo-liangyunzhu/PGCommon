@@ -1,14 +1,11 @@
 {
   "name": "PGCommon",
   "main": "dist/PGCommon.js",
-  "version": "1.0.1",
+  "version": "1.0.9",
   "homepage": "https://github.com/pinguo-liangyunzhu/PGCommon",
   "authors": [
     "liangyunzhu"
   ],
-  "dependencies": {
-    "PGBridge": "https://github.com/pinguo-luozhong/PGBridge.git"
-  },
   "license": "MIT",
   "ignore": [
     "**/.*",
