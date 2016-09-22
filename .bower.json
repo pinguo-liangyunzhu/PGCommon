@@ -1,7 +1,7 @@
 {
   "name": "PGCommon",
   "main": "dist/PGCommon.js",
-  "version": "1.0.2",
+  "version": "1.0.7",
   "homepage": "https://github.com/pinguo-liangyunzhu/PGCommon",
   "authors": [
     "liangyunzhu"
@@ -17,14 +17,14 @@
     "test",
     "tests"
   ],
-  "_release": "1.0.2",
+  "_release": "1.0.7",
   "_resolution": {
     "type": "version",
-    "tag": "v1.0.2",
+    "tag": "v1.0.7",
     "commit": "d8678f42ff919c32e22098cafe2345a416b02fd9"
   },
   "_source": "git://github.com/pinguo-liangyunzhu/PGCommon.git",
-  "_target": "~1.0.2",
+  "_target": "~1.0.7",
   "_originalSource": "PGCommon",
   "_direct": true
 }
