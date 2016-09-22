@@ -1,0 +1,30 @@
+{
+  "name": "PGCommon",
+  "main": "dist/PGCommon.js",
+  "version": "1.0.2",
+  "homepage": "https://github.com/pinguo-liangyunzhu/PGCommon",
+  "authors": [
+    "liangyunzhu"
+  ],
+  "dependencies": {
+    "PGBridge": "https://github.com/pinguo-luozhong/PGBridge.git"
+  },
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "_release": "1.0.2",
+  "_resolution": {
+    "type": "version",
+    "tag": "v1.0.2",
+    "commit": "d8678f42ff919c32e22098cafe2345a416b02fd9"
+  },
+  "_source": "git://github.com/pinguo-liangyunzhu/PGCommon.git",
+  "_target": "~1.0.2",
+  "_originalSource": "PGCommon",
+  "_direct": true
+}
