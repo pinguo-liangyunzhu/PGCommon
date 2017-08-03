@@ -18,44 +18,33 @@
 @author liangyunzhu
 @email liangyunzhu@camera360.com 2015/08/29
 */
-;(function(window){
 
 	var baseUrl="",
+
 		host=location.host,
-		defaultImgUrl = "http://s3.cn-north-1.amazonaws.com.cn/pg-dev/dev-liangyunzhu/beauti/logo.png",
-		defaultTitle = "默认的title",
-		defaultDesc = "默认的描述",
-		defaultStatus = false,
-		defaultLink = window.location.href;
-		statictsUrl = null,
-		pg = null;
-		indexPosition = defaultLink.indexOf(".html")+5;
-		defaultLink = defaultLink.substring(0,indexPosition);
+		
+		statictsUrl = null;
 
-        if(indexPosition == 4){
-			defaultLink = window.location.href;
-        }
+	var pgcommon = function () {};
+
+	var unit = pgcommon.prototype;
+
+	var commonName = "default";
 
 
-	if(host=="activity.camera360.com"){
-	    baseUrl="http://activity.camera360.com";
+	if(host == "activity.camera360.com"){
+	    baseUrl = "http://activity.camera360.com";
 	}else{
-	    baseUrl="http://activity-test.camera360.com";
+	    baseUrl = "http://activity-test.camera360.com";
 	}
 
-	 var Common={};
+	unit.statictsName = function(name) {
 
-	     a = Common,
+		commonName = name;
 
-	     configData={
-		        mode:'dev',
-		        channel:'wx',
-		        appName:'cc',
-		        WXRegisterUrl:'http://activity.camera360.com/wechat/oauth/GetSha1Str', //微信获取ticket的服务器接口地址
-		        debug:false
-		    };
+	};
 
-	 a.versions = function(){
+	unit.versions = function(){
         var u = navigator.userAgent, app = navigator.appVersion;
         return {
             trident: u.indexOf('Trident') > -1, //IE内核
@@ -72,79 +61,83 @@
             qq: u.match(/\sQQ/i) == " qq", //是否QQ
             weibo:u.indexOf('weibo') > -1,
             fb:u.indexOf('FB') > -1,
-            tw:u.indexOf('TW') > -1
+            tw:u.indexOf('TW') > -1,
+            twitter:u.toLowerCase().indexOf('twitter') > -1,
         };
     }();
 
-    a.showTip = function(message){
+    unit.showTip = function(message){
 		var $tips = $('#tips');
 		$tips.fadeIn(200).text(message);
 		window.setTimeout(function() {
 			$tips.fadeOut(200);
 		}, 3000);
-	},
+	};
 
-	a.loadingShow = function(show) {
-		var loading = $('#loading');
-		if (show && !loading.hasClass('loading-show')) {
-			loading.addClass('loading-show');
-		} else {
-			loading.removeClass('loading-show');
+	unit.loadingView = function(status) {
+		if(status) {
+			$(".loading-view").show();
+		}else{
+			$(".loading-view").hide();
 		}
-	},
+	};
 
-	a.getQuery = function(name){
+	unit.showMessage = function(message) {
+            $(".alert-text").text(message);
+            $(".alert-info").show();
+            setTimeout(function(){
+              $(".alert-info").fadeOut(300);
+            },1000);
+
+	};
+
+	unit.getQuery = function(name){
 		var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
 		var r = window.location.search.substr(1).match(reg);
 		if (r != null) return decodeURIComponent(r[2]);
 		return null;
-	},
+	};
 
-    a.ready = function(callback){
+    unit.staticts = function(type){
 
-    	if(this.versions.weixin){
+		  var status = type;
 
-		   window.PG.setConfig(configData);
+		  var language = navigator.language.substring(0,2);
 
-		}else{
-
-			configData.channel = "native";
-
-	         window.PG.setConfig(configData);
-		}
-
-    	window.PG.ready().then(function(interfaces){
-
-    		if(callback) callback(interfaces);
-		 
-	    });
-    }
-
-    a.staticts = function(type){
-		  var status = type,
-		    language = navigator.language.substring(0,2);
 		  var origin = this.getQuery("fromOrigin");
+
+		  var push = this.getQuery("push");
+
 	      if (this.versions.ios) {
-	           status+="_ios";
+	           status+="_iOS";
 	      }else{
-	          status+="_adr";
+	          status+="_安卓";
 	      }
 	      if (language !="zh") {
-	      	status+="_en";
+	      	status+="_非中文";
 	      }else{
-	      	status+="_zh";
+	      	status+="_中文";
 	      };
+	      if (push) {
+	      	status+="_push";
+	      }
 	      if (this.versions.weixin) {
-	           status+="_weixin";
+	           status+="_微信";
 	      }else if(origin){
 	      	status+="_" + origin;
 	      }else if (this.versions.fb) {
-	           status+="_fb";
+	           status+="_脸书";
+	      }else if (this.versions.twitter) {
+	           status+="_推特";
 	      }else{
-	          status+="_other";
-	      }
+	          status+="_其他";
+		  }
+		  if(commonName == "default") {
+			  throw new Error('请设置统计名称');
+			  return;
+		  } 
 	      var postData = {
-	      	"id" : "cat",
+	      	"id" : commonName,
 	      	"type" : status
 	      }
 	      $.ajax({
@@ -163,91 +156,163 @@
 	      .always(function () {
 	        console.log("complete");
 	      });
-	  }
+	  };
 
-    a.defaultConfig = function(param){
+	    unit.SetCookie = function(name,value) {
+			var Days = 30; //此 cookie 将被保存 30 天
+			var exp = new Date();
+			exp.setTime(exp.getTime() + Days*24*60*60*1000);
+			document.cookie = name + "="+ escape (value) + ";expires=" + exp.toGMTString();
+		};
 
-    	    defaultTitle = param["title"]?param["title"]:defaultTitle;
+		unit.getCookie = function(name){
+			var arr = document.cookie.match(new RegExp("(^| )"+name+"=([^;]*)(;|$)"));
+			if(arr != null)
+			return unescape(arr[2]);
+			return null;
+		};
 
-	    	defaultDesc = param["desc"]?param["desc"]:defaultDesc;
+		unit.delCookie = function(name) {
+			var exp = new Date();
+			exp.setTime(exp.getTime() - 1);
+			var cval= unit.getCookie(name);
+			if(cval!=null) document.cookie= name + "="+cval+";expires="+exp.toGMTString();
+		};
 
-	    	defaultImgUrl = param["imgUrl"]?param["imgUrl"]:defaultImgUrl;
-
-	    	statictsUrl = param["staticts"]?param["staticts"]:null;
-
-	    	pg = param["interfaces"]?param["interfaces"]:null;
-
-	    	if(!pg){
-	    		throw Error('Missing interfaces param');
-	    		return;
-	    	}
-
-	    	if(!statictsUrl){
-	    		throw Error('Missing "sta" interfaces param');
-	    		return;
-	    	}
-    }
-
-    a.shareConfig = function(param){
-
-    	var param = param;
-
-    	var title = (!!param)?(param["title"]?param["title"]:defaultTitle):defaultTitle,
-
-    	    desc = (!!param)?(param["desc"]?param["desc"]:defaultDesc):defaultDesc,
-
-    	    imgUrl = (!!param)?(param["imgUrl"]?param["imgUrl"]:defaultImgUrl):defaultImgUrl,
-
-    	    status = (!!param)?(param["status"]?param["status"]:defaultStatus):defaultStatus,
-
-    	    link = defaultLink;
-
-    	    if(status==true){
-    	    	if(desc){
-    	    	  link += "?desc="+desc;
-    	    	}
-    	    	if(param["imgUrl"]&&desc){
-    	    	  link += "&imgUrl="+imgUrl;
-    	    	}else if(param["imgUrl"]){
-    	    	  link += "?imgUrl"+imgUrl;
-    	    	}
-    	    }
-
-    	pg.showMenuItems({
-	            list: [{
-	                name: 'share',
-	                list: [
-	                    {name:'wechat'},
-	                    {name:'wechatMoments'}
-	                ]
+	    unit.getUserInfo = function(res) {
+	        var userInfo = {
+	            result: {
+	                mobile: '',
+	                uid: '',
+	                userToken: ''
 	            }
-	            ]
-	        }).then(function (res) {
-	        });
-	        //分享给朋友
-	        pg.onWebShareDefault({
-					title: title,
-					desc: desc,
-					link: link,
-					imgUrl:imgUrl,
-					success: function(res) {
-					   //分享朋友统计
-						Common.staticts("shareFriend");						
-					}
-				});
-		 //分享到朋友圈
-		 pg.onWebShareTimeline({
-				title: desc,
-				link: link,
-				imgUrl:imgUrl,
-				success: function(res) {
-				    //分享朋友圈统计
-					Common.staticts("shareCircle");				
-				}
-			});
+	        };
+	        if (typeof res != "object" && typeof res != "undefined") {
+	            res = $.parseJSON(res)
+	        }
+	        if (unit.versions.android) {
+	            if (typeof(res.params) != "undefined") {
+	                userInfo.result.uid = res.params.userId;
+	                userInfo.result.userToken = res.params.token;
+	                if (typeof(res.params.mobile)!= "undefined") {
+	                    userInfo.result.mobile = res.params.mobile;
+	                }
+	            } else {
+	                if (typeof(res.result.result) != "undefined") {
+	                    userInfo.result.uid = res.result.result.userId;
+	                    userInfo.result.userToken = res.result.result.token;
+	                    if (typeof(res.result.mobile) != "undefined") {
+	                        userInfo.result.mobile = res.result.result.mobile;
+	                    }
+	                } else {
+	                    userInfo.result.uid = res.result.userId;
+	                    userInfo.result.userToken = res.result.token;
+	                    if (typeof(res.result.mobile) != "undefined") {
+	                        userInfo.result.mobile = res.result.mobile;
+	                    }
+	                }
+	            }
+	        }
 
+	        if (unit.versions.ios) {
+	            if (typeof(res.result.uid) != "undefined") {
+	                userInfo.result.uid = res.result.uid;
+	                userInfo.result.userToken = res.result.userToken;
+	                userInfo.result.mobile = res.result.mobile;
+	            } else {
+	                userInfo.result.uid = res.result.mUserId;
+	                userInfo.result.userToken = res.result.mToken;
+	                userInfo.result.mobile = res.result.mobile;
+	            }
+	            if (typeof(res.result.mobile) != "undefined") {
+	                userInfo.result.mobile = res.result.mobile;
+	            }
+	        }
+	        return userInfo;
+    };
+
+    //处理公共参数
+    unit.dealPublicPrams = function (resp,res) {
+        var userInfo = utils.getUserInfo(resp);
+        var publicPram = {};
+        res = res.result;
+        publicPram.platform = res.platform;
+        publicPram.locale = res.language;
+        publicPram.appversion = res.appVersion;
+        publicPram.channel = res.channel;
+        publicPram.appname = res.appName;
+        publicPram.geoinfo = res.geoInfo;
+        publicPram.device = res.device;
+        publicPram.deviceId = res.deviceId;
+        publicPram.systemVersion = res.systemVersion;
+        publicPram.mac = res.mac;
+        publicPram.mcc = res.mcc || "";
+        publicPram.mnc = res.mnc || "";
+        publicPram.sig = res.sig || "";
+        publicPram.version = res.version || "";
+        publicPram["userInfo[userId]"] = userInfo.result.uid;
+        publicPram["userInfo[token]"] = userInfo.result.userToken;
+        return publicPram;
+    };
+
+    unit.getNativeAppInfo = function (resp,callback) {
+        window.PG.ready().then(function (interfaces) {
+            interfaces.getNativeInfo().then(function (res) {
+                var data = utils.dealPublicPrams(resp,res);
+                if (typeof(callback) == "function") {
+                    callback(data, interfaces);
+                }
+            });
+        });
+    };
+
+    unit.getNativeData = function(callback){
+
+      window.PG.ready().then(function (interfaces) {
+
+            interfaces.getNativeInfo().then(function (res) {
+                if (typeof(callback) == "function") {
+                    callback(res);
+                }
+            });
+        }); 
+    };
+
+    unit.getJSON = function(url,data,callback) {
+    	$.ajax({
+	        url: baseUrl + url,
+	        type: 'GET',
+	        dataType: 'jsonp',
+	        jsonp: 'jsonpCallback',
+	        data: data?data:{}
+	      })
+	      .done(function (res) {
+             if (callback) callback(res);
+	      })
+	      .fail(function () {
+	        console.log("error");
+	      })
+	      .always(function () {
+	        console.log("complete");
+	      });
+    };
+
+    unit.getPost = function(url,data,callback) {
+    	$.ajax({
+	        url: baseUrl + url,
+	        type: 'POST',
+	        dataType: 'json',
+	        data: data?data:{}
+	      })
+	      .done(function (res) {
+             if (callback) callback(res);
+	      })
+	      .fail(function () {
+	        console.log("error");
+	      })
+	      .always(function () {
+	        console.log("complete");
+	      });
     }
 
-    window.PGCommon=Common;
-
-})(window);
+module.exports = pgcommon;
